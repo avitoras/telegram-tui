@@ -1,9 +1,25 @@
 from textual.app import App, ComposeResult
 from textual.widgets import Placeholder, Label, Static, Rule
 from textual.containers import Horizontal, VerticalScroll, Vertical
+from telethon import TelegramClient, events, sync
+from tokens import api_id, api_hash
+
+names = []
+soo = []
+
+limits = 6
+
+client = TelegramClient('Telegram-Cli', api_id, api_hash)
+client.start()
+print(client.get_me().stringify())
+
+for titles in client.iter_dialogs(limit=limits):
+    names.append('{:<14}'.format(titles.title))
+
+for messages in client.iter_dialogs(limit=limits):
+    soo.append('{:<14}'.format(messages.message.message))
 
 class T_m():
-    """Класс объекта тестового сообщения (Test_message)"""
 
     def __init__(self, text: str, user: int):
         """
@@ -15,7 +31,6 @@ class T_m():
         self.user = user
 
 class T_u():
-    """Класс объекта тестового пользователя(Test_user)"""
 
     def __init__(self, name: str, user_id: int, dialog: list[T_m]):
         """
@@ -30,9 +45,10 @@ class T_u():
 
 client = T_u("вы", 0, [])
 
-test_chats = [T_u("антон", 1, [T_m("привет", 0), T_m("как дела?", 1), T_m("норм", 0)]), 
-              T_u("лёха", 2, [T_m("как выйти из вима", 2), T_m("хелп", 2), T_m("никак", 0)]), 
-              T_u("нифига", 3, [T_m("слушай, а как там лёха", 3), T_m("нифига", 0), T_m("нифигадлыроарыарышщращгшырашырвшщарш", 3)])]
+test_chats = []
+
+for i in range(0, limits):
+    test_chats.append(T_u(names[i], 1, [T_m(soo[i], 0)]))
 
 class Chat(Horizontal):
     """Кастомный виджет чата слева"""
@@ -59,7 +75,7 @@ class TelegramTUI(App):
                 with VerticalScroll():
                     for i in test_chats:
                         yield Chat(i)
-                        
+
                 yield Rule("vertical")
 
             with VerticalScroll(id="dialog"):
