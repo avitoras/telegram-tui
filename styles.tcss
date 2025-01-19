@@ -1,0 +1,20 @@
+#chats {
+    width: 30%;
+}
+
+#dialog {
+    width: 70%;
+}
+
+Chat {
+    height: 3;
+}
+
+Rule {
+    color: #FFFFFF;
+}
+
+Placeholder {
+    height: 3;
+    padding: 1;
+}
