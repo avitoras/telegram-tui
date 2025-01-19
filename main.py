@@ -3,7 +3,6 @@ from textual.widgets import Placeholder, Label, Static, Rule
 from textual.containers import Horizontal, VerticalScroll, Vertical
 from telethon import TelegramClient, events, sync
 from tokens import api_id, api_hash
-import time
 
 names = []
 soo = []
@@ -16,16 +15,11 @@ print(client.get_me().stringify())
 
 for titles in client.iter_dialogs(limit=limits):
     names.append('{:<14}'.format(titles.title))
-print(names)
-time.sleep(3)
 
 for messages in client.iter_dialogs(limit=limits):
     soo.append('{:<14}'.format(messages.message.message))
-print(soo)
-time.sleep(3)
 
 class T_m():
-    """Класс объекта тестового сообщения (Test_message)"""
 
     def __init__(self, text: str, user: int):
         """
@@ -37,7 +31,6 @@ class T_m():
         self.user = user
 
 class T_u():
-    """Класс объекта тестового пользователя(Test_user)"""
 
     def __init__(self, name: str, user_id: int, dialog: list[T_m]):
         """
