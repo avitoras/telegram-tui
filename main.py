@@ -1,80 +1,71 @@
+from telethon import TelegramClient, events, sync, utils
 from textual.app import App, ComposeResult
 from textual.widgets import Placeholder, Label, Static, Rule
 from textual.containers import Horizontal, VerticalScroll, Vertical
-from telethon import TelegramClient, events, sync
+from textual.reactive import var
+from textual.widget import Widget
 from tokens import api_id, api_hash
 
-names = []
-soo = []
-
-limits = 6
-
-client = TelegramClient('Telegram-Cli', api_id, api_hash)
-client.start()
-print(client.get_me().stringify())
-
-for titles in client.iter_dialogs(limit=limits):
-    names.append('{:<14}'.format(titles.title))
-
-for messages in client.iter_dialogs(limit=limits):
-    soo.append('{:<14}'.format(messages.message.message))
-
-class T_m():
-
-    def __init__(self, text: str, user: int):
-        """
-        text - текст сообщения \n
-        user - айди отправителя сообщения
-        """
-
-        self.text = text
-        self.user = user
-
-class T_u():
-
-    def __init__(self, name: str, user_id: int, dialog: list[T_m]):
-        """
-        name - имя пользователя \n
-        id - айди пользователя \n
-        dialog - список сообщений (T_m) диалога
-        """
-
-        self.name = name
-        self.user_id = user_id
-        self.dialog = dialog
-
-client = T_u("вы", 0, [])
-
-test_chats = []
-
-for i in range(0, limits):
-    test_chats.append(T_u(names[i], 1, [T_m(soo[i], 0)]))
-
-class Chat(Horizontal):
+class Chat(Widget):
     """Кастомный виджет чата слева"""
-    def __init__(self, user: T_u):
-        super().__init__()
-        self.user = user
+    def __init__(self, name: str | None = None, id: str | None = None, classes: str | None = None, disabled: bool = False):
+        super().__init__(name=name, id=id, classes=classes, disabled=disabled)
 
     def _on_click(self):
         pass
 
     def compose(self) -> ComposeResult:
         with Horizontal():
-            yield Label(f"┌───┐\n│ {self.user.name[:1]} │\n└───┘")
+            yield Label(f"┌───┐\n│ {self.name[:1]} │\n└───┘")
             with Vertical():
-                yield Label(self.user.name, id="name")
-                yield Label(self.user.dialog[-1].text)
+                yield Label(self.name, id="name")
+                #yield Label(self.user.dialog[-1].text)
 
 class TelegramTUI(App):
+
     CSS_PATH = "styles.tcss"
+    
+    def __init__(self):
+        super().__init__()
+        self.api_id = api_id
+        self.api_hash = api_hash
+        self.client = TelegramClient('user', api_id, api_hash)
+        self.chats = var([])
+
+    async def on_mount(self) -> None:
+        await self.client.start()
+        dialogs = []
+        async for dialog in self.client.iter_dialogs():
+            dialogs.append(dialog)
+        self.chats = dialogs
+        await self.update_chat_list()
+
+    async def update_chat_list(self):
+        #if self.chats:
+        #for dialog in self.chats:
+        #    name = utils.get_display_name(dialog.entity)
+        #    last_msg = ""  # Значение по умолчанию
+
+        #    try:
+        #        last_messages = await self.client.get_messages(dialog.entity, limit=1)
+        #        if last_messages:
+        #            last_msg = last_messages[0].message  # Получаем текст последнего сообщения
+        #    except Exception as e: #  Добавлена обработка ошибок
+        #        print(f"Ошибка получения последнего сообщения: {e}")
+
+        chat_container = self.query_one("#main_container").query_one("#chats").query_one("#chat_container")
+        chat_container.query(Chat).remove()  # Clear existing labels
+
+        for dialog in self.chats:
+            name = utils.get_display_name(dialog.entity)
+            #msg = utils.get_input_peer
+            chat = Chat(name, id=f"chat-{dialog.id}")
+            chat_container.mount(chat)
 
     def compose(self) -> ComposeResult:
-        with Horizontal():
+        with Horizontal(id="main_container"):
             with Horizontal(id="chats"):
-                with VerticalScroll():
-                    for i in test_chats:
-                        yield Chat(i)
+                yield VerticalScroll(*[Static(id="chat_container")])
 
                 yield Rule("vertical")
 
