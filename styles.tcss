@@ -14,7 +14,7 @@ Rule {
     color: #FFFFFF;
 }
 
-Placeholder {
+.message {
     height: 3;
     padding: 1;
 }
