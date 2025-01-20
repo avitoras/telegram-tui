@@ -18,3 +18,20 @@ Rule {
     height: 3;
     padding: 1;
 }
+
+Message {
+    height: auto;
+    width: auto;
+}
+
+Message Container {
+    height: auto;
+}
+
+#input_place {
+    height: 3;
+}
+
+#msg_input {
+    width: 70%;
+}
