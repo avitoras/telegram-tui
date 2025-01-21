@@ -3,7 +3,10 @@ from telethon import TelegramClient, events, utils
 class TelegramClientWrapper:
     def __init__(self, api_id, api_hash, message_handler):
         self.client = TelegramClient('user', api_id, api_hash)
-        self.client.add_event_handler(message_handler, events.NewMessage())
+        #self.client.add_event_handler(message_handler, events.NewMessage())
+        self.client.on(events.NewMessage())(message_handler)
+
+        #ни то ни то не работает, костя спаси
 
     async def connect(self):
         await self.client.start()

@@ -30,8 +30,14 @@ Message Container {
 
 #input_place {
     height: 3;
+    width: 70%;
+    align-horizontal: center;
 }
 
 #msg_input {
-    width: 70%;
+    width: 65%;
+}
+
+#send {
+    
 }
