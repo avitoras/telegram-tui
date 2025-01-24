@@ -1,6 +1,8 @@
 from telethon import TelegramClient, events, utils
 
 class TelegramClientWrapper:
+    """Обёртка для метода TelegramClient из Telethon"""
+
     def __init__(self, api_id, api_hash, message_handler):
         self.message_handler = message_handler
         self.client = TelegramClient('user', api_id, api_hash)
@@ -10,6 +12,9 @@ class TelegramClientWrapper:
         await self.message_handler()
 
     async def connect(self):
+        await self.client.connect()
+
+    async def start(self):
         await self.client.start()
 
     async def disconnect(self):
