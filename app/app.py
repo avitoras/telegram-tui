@@ -1,23 +1,23 @@
-from telethon import TelegramClient, events
+#from telethon import TelegramClient, events
 from textual.app import App, ComposeResult
-from textual.containers import Horizontal, VerticalScroll, Vertical, Container
-from textual.widgets import Placeholder, Label, Static, Input, Button
+from textual.containers import Horizontal, VerticalScroll
+from textual.widgets import Static, Footer
 from widgets.chat import Chat
 from widgets.dialog import Dialog
 from telegram.client import TelegramClientWrapper
 from tokens import api_id, api_hash
-from time import sleep
 
 class TelegramTUI(App):
     CSS_PATH = "../tcss/style.tcss"
 
     def __init__(self):
         super().__init__()
-        self.telegram_client = TelegramClientWrapper(api_id, api_hash, self.update_chat_list)
+        
 
     async def on_mount(self) -> None:
+        self.telegram_client = TelegramClientWrapper(api_id, api_hash, self.update_chat_list)
         self.chat_container = self.query_one("#main_container").query_one("#chats").query_one("#chat_container")
-        self.limit = 25
+        self.limit = 100
         for i in range(self.limit):
             chat = Chat(id=f"chat-{i + 1}")
             self.chat_container.mount(chat)
@@ -51,6 +51,7 @@ class TelegramTUI(App):
             #self.notify("Новое сообщение")    #колхоз дебаг
 
     def compose(self) -> ComposeResult:
+        yield Footer()
         with Horizontal(id="main_container"):
             with Horizontal(id="chats"):
                 yield VerticalScroll(Static(id="chat_container"))
