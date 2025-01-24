@@ -1,7 +1,7 @@
-from telethon import TelegramClient, events
+#from telethon import TelegramClient, events
 from textual.app import App, ComposeResult
-from textual.containers import Horizontal, VerticalScroll, Vertical, Container
-from textual.widgets import Placeholder, Label, Static, Input, Button
+from textual.containers import Horizontal, VerticalScroll
+from textual.widgets import Static, Footer
 from widgets.chat import Chat
 from widgets.dialog import Dialog
 from telegram.client import TelegramClientWrapper
@@ -12,21 +12,33 @@ class TelegramTUI(App):
 
     def __init__(self):
         super().__init__()
-        self.telegram_client = TelegramClientWrapper(api_id, api_hash, self.update_chat_list)
+        
 
     async def on_mount(self) -> None:
+        self.telegram_client = TelegramClientWrapper(api_id, api_hash, self.update_chat_list)
         self.chat_container = self.query_one("#main_container").query_one("#chats").query_one("#chat_container")
-
-        self.limit = 25
+        self.limit = 100
         for i in range(self.limit):
             chat = Chat(id=f"chat-{i + 1}")
             self.chat_container.mount(chat)
+        #self.mount_chats(limit=25)
 
         await self.telegram_client.connect()
 
+        await self.update_chat_list()
+
     # TODO: скоро сюда переедет маунт чатов из функции on_mount
-    def mount_chats(self):
-        pass
+    # P.S. сделано, но неудачно
+    def mount_chats(self, limit: int):
+        self.limit = limit
+        chats_amount = len(self.chat_container.query(Chat))
+        if limit > chats_amount:
+            for i in range(limit - chats_amount):
+                chat = Chat(id=f"chat-{i + 1 + (limit - chats_amount)}")
+                self.chat_container.mount(chat)
+        elif not (limit == chats_amount):
+            for i in range(chats_amount - limit):
+                self.chat_container.query(Chat).last().remove()
 
     async def update_chat_list(self):
         dialogs = await self.telegram_client.get_dialogs(limit=self.limit)
@@ -39,9 +51,11 @@ class TelegramTUI(App):
             #self.notify("Новое сообщение")    #колхоз дебаг
 
     def compose(self) -> ComposeResult:
+        yield Footer()
         with Horizontal(id="main_container"):
             with Horizontal(id="chats"):
                 yield VerticalScroll(Static(id="chat_container"))
+                #TODO: сделать кнопку чтобы прогрузить больше чатов, это оптимизация
 
             yield Dialog()
 

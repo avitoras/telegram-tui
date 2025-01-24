@@ -15,6 +15,7 @@ class Dialog(Widget):
                 yield Message(message="ДАТОУШЩАРШЩУРЩША!!!!", is_me=False)
                 # должно быть примерно is_me = message.from_id == client.get_peer_id("me")
                 # но я могу ошибаться, я это фиш если что
+                #TODO: сделать кнопку чтобы прогрузить больше сообщений, но при этом чтобы при перезаходе в чат оставались прогруженными только 10 сообщений, а остальные декомпоузились
 
             with Horizontal(id="input_place"):
                 yield Input(placeholder="Сообщение", id="msg_input")
