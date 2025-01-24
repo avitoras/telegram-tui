@@ -4,6 +4,8 @@ from textual.widget import Widget
 from widgets.message import Message
 
 class Dialog(Widget):
+    """Класс окна диалога"""
+    
     def __init__(self, id=None, classes=None, disabled=False):
         super().__init__(id=id, classes=classes, disabled=disabled)
 
