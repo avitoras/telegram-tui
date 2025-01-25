@@ -1,7 +1,7 @@
 from telethon import TelegramClient, events
 from textual.app import App, ComposeResult
-from textual.containers import Horizontal, VerticalScroll
-from textual.widgets import Static, Footer
+from textual.containers import Horizontal, VerticalScroll, Vertical
+from textual.widgets import Static, Footer, Label, Input, Button
 from widgets.chat import Chat
 from widgets.dialog import Dialog
 from textual.screen import Screen
@@ -44,7 +44,7 @@ class ChatScreen(Screen):
             chat.username = str(dialogs[i].name)
             chat.msg = str(dialogs[i].message.message)
             chat.peer_id = dialogs[i].id
-            self.notify("Новое сообщение")    #колхоз дебаг
+            #self.notify("Новое сообщение")    #колхоз дебаг
 
     def compose(self) -> ComposeResult:
         yield Footer()
@@ -58,7 +58,34 @@ class ChatScreen(Screen):
 class AuthScreen(Screen):
     """Это будет классом экрана логина"""
 
-    pass
+    def __init__(self, name = None, id = None, classes = None, telegram_client: TelegramClient | None = None):
+        super().__init__(name, id, classes)
+        self.client = telegram_client
+        self.ac = self.query_one("#auth_container")
+
+    def compose(self):
+        with Vertical(id="auth_container"):
+            yield Label("Добро пожаловать в Telegram TUI")
+            yield Input(placeholder="Номер телефона", id="phone")
+            yield Input(placeholder="Код", id="code", disabled=True)
+            yield Input(placeholder="Пароль", id="password", password=True, disabled=True)
+
+    async def on_submit(self, event: Input.Submitted) -> None:
+        if event.button.id == "phone":
+            await self.client.send_code_request(event.value)
+            for i in ("#phone", "#password"):
+                self.ac.query_one(i).disabled = True
+            self.ac.query_one("#code").disabled = False
+        elif event.button.id == "code":
+            await self.client.sign_in(event.value)
+            for i in ("#phone", "#code"):
+                self.ac.query_one(i).disabled = True
+            self.ac.query_one("#password").disabled = False
+        elif event.button.id == "password":
+            await self.client.sign_in(event.value)
+            for i in ("#phone", "#password"):
+                self.ac.query_one(i).disabled = True
+            self.ac.query_one("#code").disabled = True
 
 class TelegramTUI(App):
     """Класс приложения"""
@@ -67,18 +94,22 @@ class TelegramTUI(App):
     #SCREENS = {"chats": ChatScreen}
 
     def __init__(self):
-        super().__init__()    
+        super().__init__()
 
     async def on_mount(self) -> None:
-        self.telegram_client = TelegramClient("../user", api_id, api_hash)
-        #self.push_screen("chats")
-        chat_screen = ChatScreen(telegram_client=self.telegram_client)
+        self.telegram_client = TelegramClient("user", api_id, api_hash)
+        await self.telegram_client.start()
+
+        if not await self.telegram_client.is_user_authorized():
+            auth_screen = AuthScreen(telegram_client=self.telegram_client)
+            self.install_screen(auth_screen, name="auth")
+            self.push_screen("auth")
+
+        """chat_screen = ChatScreen(telegram_client=self.telegram_client)
         self.install_screen(chat_screen, name="chats")
         self.push_screen("chats")
-        self.telegram_client.on(events.NewMessage())(chat_screen.update_chat_list())
-
         await self.telegram_client.start()
-        await self.update_chat_list()
+        await chat_screen.update_chat_list()"""
 
     async def on_exit_app(self):
         await self.telegram_client.disconnect()
