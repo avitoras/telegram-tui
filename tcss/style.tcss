@@ -41,3 +41,7 @@ Message Container {
 #send {
     
 }
+
+#auth_container{
+    align: center middle;
+}
