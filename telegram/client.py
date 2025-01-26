@@ -1,3 +1,8 @@
+"""
+ЭТОТ ФАЙЛ БОЛЬШЕ НЕ ИСПОЛЬЗУЕТСЯ 
+СКОРО УДАЛИМ
+"""
+
 from telethon import TelegramClient, events, utils
 
 class TelegramClientWrapper:

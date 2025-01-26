@@ -5,7 +5,15 @@ from textual.widget import Widget
 class Message(Widget):
     """Класс виджета сообщений для окна диалога"""
     
-    def __init__(self, name=None, message=None, is_me=None, id=None, classes=None, disabled=False):
+    def __init__(
+            self, 
+            name=None, 
+            message=None, 
+            is_me=None, 
+            id=None, 
+            classes=None, 
+            disabled=False
+        ):
         super().__init__(name=name, id=id, classes=classes, disabled=disabled)
         self.message = message
         self.is_me = is_me
