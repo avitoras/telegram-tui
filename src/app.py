@@ -1,21 +1,12 @@
 from telethon import TelegramClient, events
-from telethon.errors import SessionPasswordNeededError
-from textual.app import App, ComposeResult
-from textual.containers import Horizontal, VerticalScroll, Vertical
-from textual.widgets import Static, Footer, Label, Input, Button
-from textual.screen import Screen
-from textual.events import Event
-from widgets.chat import Chat
-from widgets.dialog import Dialog
+from textual.app import App
 from tokens import api_id, api_hash
-from screens.auth_screen import AuthScreen
-from screens.chat_screen import ChatScreen
+from src.screens import AuthScreen, ChatScreen
 
 class TelegramTUI(App):
     """Класс приложения"""
 
-    CSS_PATH = "../tcss/style.tcss"
-    #SCREENS = {"chats": ChatScreen}
+    CSS_PATH = "style.tcss"
 
     async def on_mount(self) -> None:
         self.telegram_client = TelegramClient("user", api_id, api_hash)

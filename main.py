@@ -1,4 +1,4 @@
-from app.app import TelegramTUI
+from src.app import TelegramTUI
 
 if __name__ == "__main__":
     tg = TelegramTUI()
