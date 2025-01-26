@@ -1,3 +1,4 @@
-# Values from this files willn't work! Replace it with your's from my.telegram.org
-api_id = 4327852
-api_hash = "yourhash"
+"""Получите свои API-ключи на https://my.telegram.org/apps"""
+
+api_id = 21321
+api_hash = "yourhashherebro"
