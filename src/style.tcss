@@ -1,0 +1,47 @@
+#chats {
+    width: 30%;
+}
+
+#dialog {
+    width: 70%;
+}
+
+Chat {
+    height: 3;
+}
+
+Rule {
+    color: #FFFFFF;
+}
+
+.message {
+    height: 3;
+    padding: 1;
+}
+
+Message {
+    height: auto;
+    width: auto;
+}
+
+Message Container {
+    height: auto;
+}
+
+#input_place {
+    height: 3;
+    width: 70%;
+    align-horizontal: center;
+}
+
+#msg_input {
+    width: 65%;
+}
+
+#send {
+    
+}
+
+#auth_container{
+    align: center middle;
+}
