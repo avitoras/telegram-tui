@@ -38,10 +38,6 @@ Message Container {
     width: 65%;
 }
 
-#send {
-    
-}
-
 #auth_container{
     align: center middle;
 }
