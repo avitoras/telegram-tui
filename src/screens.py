@@ -145,5 +145,5 @@ class ChatScreen(Screen):
             with Horizontal(id="chats"):
                 yield VerticalScroll(Static(id="chat_container"))
                 #TODO: сделать кнопку чтобы прогрузить больше чатов
-
-            yield Dialog()
+                
+            yield Dialog(telegram_client=self.telegram_client)

@@ -20,6 +20,7 @@ class TelegramTUI(App):
             self.install_screen(auth_screen, name="auth")
             self.push_screen("auth")
         else:
+            await self.telegram_client.start()
             self.push_screen("chats")
 
     async def on_exit_app(self):
