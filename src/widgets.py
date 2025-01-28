@@ -27,8 +27,7 @@ class Chat(Widget):
         )
         global personid
         personid = 0
-        self.notify = notify_func
-        
+        self.notify = notify_fun
 
     def _on_click(self):
         global personid
@@ -56,7 +55,6 @@ class Dialog(Widget):
         self.messages = []
         for messages1 in self.telegram_client.iter_dialogs(self.personid, limit=5):
             messages.append(messages1.text)
-        
 
     def compose(self):
         messages = self.messages
@@ -67,7 +65,7 @@ class Dialog(Widget):
                 yield Message(message=messages[2], is_me=False)
                 yield Message(message=messages[3], is_me=True)
                 yield Message(message=messages[4], is_me=False)
-                
+
                 # должно быть примерно
                 # is_me = message.from_id == client.get_peer_id("me")
 
@@ -86,8 +84,6 @@ class Dialog(Widget):
         self.app.notify("Нажато отправить")
         self.message_text = self.query_one("#msg_input").value
         await self.telegram_client.send_message(personid, str(self.message_text))
-        
-        
 
 class Message(Widget):
     """Класс виджета сообщений для окна диалога"""

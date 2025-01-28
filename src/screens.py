@@ -64,7 +64,7 @@ class ChatScreen(Screen):
             self, 
             name = None, 
             id = None, 
-            classes = None,
+            classes = None, 
             telegram_client: TelegramClient | None = None
     ):
         super().__init__(name, id, classes)
@@ -145,5 +145,5 @@ class ChatScreen(Screen):
             with Horizontal(id="chats"):
                 yield VerticalScroll(Static(id="chat_container"))
                 #TODO: сделать кнопку чтобы прогрузить больше чатов
-
+                
             yield Dialog(telegram_client=self.telegram_client)
