@@ -1,3 +1,5 @@
+"""Файл с кастомными виджетами приложения"""
+
 from textual.containers import Horizontal, Vertical, Container, VerticalScroll
 from textual.widget import Widget
 from textual.reactive import Reactive
@@ -14,11 +16,10 @@ class Chat(Widget):
     def __init__(
             self, 
             name: str | None = None, 
-            notify_func = None, 
             id: str | None = None, 
             classes: str | None = None, 
             disabled: bool = False
-        ):
+    ):
         super().__init__(
             name=str(name), 
             id=id, 
@@ -28,7 +29,7 @@ class Chat(Widget):
         global personid
         personid = 0
         self.notify = notify_fun
-
+        
     def _on_click(self):
         global personid
         self.msg = str(self.peer_id)

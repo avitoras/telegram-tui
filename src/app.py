@@ -1,3 +1,5 @@
+"""Главный файл приложения"""
+
 from telethon import TelegramClient, events
 from textual.app import App
 from tokens import api_id, api_hash
