@@ -95,11 +95,11 @@ class ChatScreen(Screen):
         print("Первоначальная загрузка чатов завершена")
 
         for event in (
-            events.NewMessage(), 
-            events.MessageDeleted(), 
-            events.MessageEdited()
+            events.NewMessage, 
+            events.MessageDeleted, 
+            events.MessageEdited
         ):
-            self.telegram_client.on(event)(self.update_chat_list)
+            self.telegram_client.on(event())(self.update_chat_list)
 
     def mount_chats(self, limit: int):
         print("Загрузка виджетов чатов...")
@@ -145,7 +145,6 @@ class ChatScreen(Screen):
         yield Footer()
         with Horizontal(id="main_container"):
             with Horizontal(id="chats"):
-                yield VerticalScroll(Static(id="chat_container"))
+                yield VerticalScroll(id="chat_container")
                 #TODO: сделать кнопку чтобы прогрузить больше чатов
-
-            yield Dialog()
+            yield Dialog(telegram_client=self.telegram_client)
