@@ -1,12 +1,14 @@
+"""Файл с кастомными экранами приложения"""
+
 from textual.screen import Screen
 from textual.widgets import Label, Input, Footer, Static
 from textual.containers import Vertical, Horizontal, VerticalScroll
 from telethon.errors import SessionPasswordNeededError
-from telethon import TelegramClient, events, utils
+from telethon import TelegramClient, events
 from src.widgets import Dialog, Chat
 
 class AuthScreen(Screen):
-    """Класс логина в аккаунт"""
+    """Класс экрана логина в аккаунт"""
 
     def __init__(
             self, 
@@ -14,7 +16,7 @@ class AuthScreen(Screen):
             id = None, 
             classes = None, 
             telegram_client: TelegramClient | None = None
-        ):
+    ):
         super().__init__(name, id, classes)
         self.client = telegram_client
 
@@ -55,7 +57,6 @@ class AuthScreen(Screen):
             await self.client.start()
             self.app.pop_screen()
             self.app.push_screen("chats")
-            self.app.notify("")
 
 class ChatScreen(Screen):
     """Класс экрана чатов, он же основной экран приложения"""
@@ -94,11 +95,11 @@ class ChatScreen(Screen):
         print("Первоначальная загрузка чатов завершена")
 
         for event in (
-            events.NewMessage(), 
-            events.MessageDeleted(), 
-            events.MessageEdited()
+            events.NewMessage, 
+            events.MessageDeleted, 
+            events.MessageEdited
         ):
-            self.telegram_client.on(event)(self.update_chat_list)
+            self.telegram_client.on(event())(self.update_chat_list)
 
     def mount_chats(self, limit: int):
         print("Загрузка виджетов чатов...")
@@ -117,14 +118,16 @@ class ChatScreen(Screen):
 
     async def update_chat_list(self, event = None):
         print("Запрос обновления чатов")
+
         if not self.is_chat_update_blocked:
             self.is_chat_update_blocked = True
+
             dialogs = await self.telegram_client.get_dialogs(
                 limit=self.limit, archived=False
             )
             print("Получены диалоги")
+
             limit = len(dialogs)
-            #limit = 30
             self.mount_chats(limit)
 
             for i in range(limit):
@@ -132,7 +135,6 @@ class ChatScreen(Screen):
                 chat.username = str(dialogs[i].name)
                 chat.msg = str(dialogs[i].message.message)
                 chat.peer_id = dialogs[i].id
-                #self.notify("Новое сообщение")    #колхоз дебаг
 
             self.is_chat_update_blocked = False
             print("Чаты обновлены")
@@ -143,7 +145,6 @@ class ChatScreen(Screen):
         yield Footer()
         with Horizontal(id="main_container"):
             with Horizontal(id="chats"):
-                yield VerticalScroll(Static(id="chat_container"))
+                yield VerticalScroll(id="chat_container")
                 #TODO: сделать кнопку чтобы прогрузить больше чатов
-
-            yield Dialog()
+            yield Dialog(telegram_client=self.telegram_client)

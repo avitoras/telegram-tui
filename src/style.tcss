@@ -28,6 +28,11 @@ Message Container {
     height: auto;
 }
 
+Message Static {
+    height: auto;
+    width: auto;
+}
+
 #input_place {
     height: 3;
     width: 70%;
@@ -36,10 +41,6 @@ Message Container {
 
 #msg_input {
     width: 65%;
-}
-
-#send {
-    
 }
 
 #auth_container{
