@@ -1,7 +1,7 @@
 """Файл с кастомными экранами приложения"""
 
 from textual.screen import Screen
-from textual.widgets import Label, Input, Footer, Static
+from textual.widgets import Label, Input, Footer, Static, ContentSwitcher
 from textual.containers import Vertical, Horizontal, VerticalScroll
 from telethon.errors import SessionPasswordNeededError
 from telethon import TelegramClient, events
@@ -72,7 +72,7 @@ class ChatScreen(Screen):
         self.telegram_client = telegram_client
 
     async def on_mount(self):
-        self.limit = 30
+        self.limit = 100
 
         self.chat_container = self\
             .query_one("#main_container")\
@@ -147,4 +147,5 @@ class ChatScreen(Screen):
             with Horizontal(id="chats"):
                 yield VerticalScroll(id="chat_container")
                 #TODO: сделать кнопку чтобы прогрузить больше чатов
-            yield Dialog(telegram_client=self.telegram_client)
+            yield ContentSwitcher(id="dialog_switcher")
+                #yield Dialog(telegram_client=self.telegram_client)

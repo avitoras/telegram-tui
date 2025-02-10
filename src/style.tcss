@@ -14,11 +14,6 @@ Rule {
     color: #FFFFFF;
 }
 
-.message {
-    height: 3;
-    padding: 1;
-}
-
 Message {
     height: auto;
     width: auto;
@@ -26,11 +21,6 @@ Message {
 
 Message Container {
     height: auto;
-}
-
-Message Static {
-    height: auto;
-    width: auto;
 }
 
 #input_place {
@@ -45,4 +35,30 @@ Message Static {
 
 #auth_container{
     align: center middle;
+}
+
+.is_me_true Container {
+    padding: 0 0 0 15;
+    align: right middle;
+}
+
+.is_me_true Static {
+    border: solid $primary;
+    width: auto;
+    height: auto;
+    text-align: right;
+    min-width: 11;
+}
+
+.is_me_false Container {
+    padding: 0 15 0 0;
+    align: left middle;
+}
+
+.is_me_false Static {
+    border: solid $foreground;
+    width: auto;
+    height: auto;
+    text-align: left;
+    min-width: 11;
 }

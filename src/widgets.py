@@ -3,15 +3,17 @@
 from textual.containers import Horizontal, Vertical, Container, VerticalScroll
 from textual.widget import Widget
 from textual.reactive import Reactive
-from textual.widgets import Input, Button, Label, Static
-from telethon import TelegramClient, events
+from textual.widgets import Input, Button, Label, Static, ContentSwitcher
+from textual.app import ComposeResult, RenderResult
+from telethon import TelegramClient, events, utils
+import datetime
 
 class Chat(Widget):
     """Класс виджета чата для панели чатов"""
 
-    username = Reactive(" ", recompose=True)
-    msg = Reactive(" ", recompose=True)
-    peer_id = Reactive(0)
+    username: Reactive[str] = Reactive(" ", recompose=True)
+    msg: Reactive[str] = Reactive(" ", recompose=True)
+    peer_id: Reactive[int] = Reactive(0)
 
     def __init__(
             self, 
@@ -19,19 +21,35 @@ class Chat(Widget):
             id: str | None = None, 
             classes: str | None = None, 
             disabled: bool = False
-    ):
+    ) -> None:
         super().__init__(
             name=str(name), 
             id=id, 
             classes=classes, 
             disabled=disabled
         )
+        
+    def on_mount(self) -> None:
+        self.switcher = self.screen.query_one(Horizontal).query_one("#dialog_switcher", ContentSwitcher)
     
-    def _on_click(self):
-        self.msg = str(self.peer_id)
-        self.app.notify("нажат чат")
+    def on_click(self) -> None:
+        dialog_id = f"dialog-{str(self.peer_id)}"
+        print("click 1")
+        try:
+            self.switcher.mount(Dialog(
+                telegram_client=self.app.telegram_client, 
+                chat_id=self.peer_id, 
+                id=dialog_id
+            ))
+            print("click 1.1")
+        except:
+            print("click 1.2")
+        print("click 2")
+        self.switcher.current = dialog_id
+        self.switcher.recompose()
+        print("click 3")
 
-    def compose(self):
+    def compose(self) -> ComposeResult:
         with Horizontal():
             yield Label(f"┌───┐\n│ {self.username[:1]} │\n└───┘")
             with Vertical():
@@ -46,21 +64,23 @@ class Dialog(Widget):
             id=None, 
             classes=None, 
             disabled=None, 
-            telegram_client: TelegramClient | None = None
-        ):
+            telegram_client: TelegramClient | None = None,
+            chat_id = None
+        ) -> None:
         super().__init__(id=id, classes=classes, disabled=disabled)
         self.telegram_client = telegram_client
-        self.chat_id = -1002299818671
+        self.chat_id = chat_id
         self.is_msg_update_blocked = False
 
-    async def on_mount(self):
-        self.limit = 30
+    async def on_mount(self) -> None:
+        self.limit = 10
 
         self.msg_input = self.query_one("#msg_input")
         self.dialog = self.query_one(Vertical).query_one("#dialog")
 
         self.me = await self.telegram_client.get_me()
 
+        self.dialog.scroll_end(animate=False)
         await self.update_dialog()
 
         for event in (
@@ -68,22 +88,26 @@ class Dialog(Widget):
             events.MessageDeleted, 
             events.MessageEdited
         ):
-            self.telegram_client.on(event(chats=(self.chat_id)))\
-                (self.update_dialog)
+            self.telegram_client.on(
+                event(chats=(self.chat_id))
+            )(self.update_dialog)
 
-    def mount_messages(self, limit: int):
+    def mount_messages(self, limit: int) -> None:
         print("Загрузка виджетов сообщений...")
 
         msg_amount = len(self.dialog.query(Message))
 
         if limit > msg_amount:
             for i in range(limit - msg_amount):
-                self.dialog.mount(Message(id=f"msg-{i + msg_amount + 1}"))
+                self.dialog.mount(
+                    Message(id=f"msg-{i + msg_amount + 1}"), 
+                    before=0
+                )
         elif limit < msg_amount:
             for i in range(msg_amount - limit):
                 self.dialog.query(Message).last().remove()
 
-    async def update_dialog(self, event = None):
+    async def update_dialog(self, event = None) -> None:
         print("Запрос обновления сообщений")
 
         if not self.is_msg_update_blocked:
@@ -98,70 +122,79 @@ class Dialog(Widget):
             self.mount_messages(limit)
 
             for i in range(limit):
-                chat = self.dialog.query_one(f"#msg-{i + 1}")
-                chat.message = str(messages[i].message) + \
-                    (not str(messages[i].message)) * " "
-                chat.is_me = messages[i].from_id == self.me.id
-                chat._update_styles()
+                msg = self.dialog.query_one(f"#msg-{i + 1}")
+                msg.message = ""
+                if str(messages[i].message):
+                    msg.message = str(messages[i].message)
+                
+                #TODO: завести это:
+                is_me = messages[i].from_id.user_id == self.me.id
+                
+                msg.is_me = is_me
+                msg.username = utils.get_display_name(messages[i].sender)
+                msg.send_time = messages[i]\
+                    .date\
+                    .astimezone(datetime.timezone.utc)\
+                    .strftime("%H:%M")
 
             self.is_msg_update_blocked = False
             print("Сообщения обновлены")
         else:
             print("Обновление сообщений невозможно: уже выполняется")
 
-    def compose(self):
+    def compose(self) -> ComposeResult:
         with Vertical():
             yield VerticalScroll(id="dialog")
             with Horizontal(id="input_place"):
                 yield Input(placeholder="Сообщение", id="msg_input")
                 yield Button(label="➤", id="send", variant="primary")
 
-    async def on_button_pressed(self, event = None):
+    async def on_button_pressed(self, event = None) -> None:
         await self.send_message()
     
-    async def on_input_submitted(self, event = None):
+    async def on_input_submitted(self, event = None) -> None:
         await self.send_message()
 
-    async def send_message(self):
-        await self.telegram_client.send_message(
-            self.chat_id, 
-            str(self.msg_input.value)
-        )
+    async def send_message(self) -> None:
+        try:
+            await self.telegram_client.send_message(
+                self.chat_id, 
+                str(self.msg_input.value)
+            )
+        except ValueError:
+            self.app.notify("Ошибка отправки")
         self.msg_input.value = ""
         await self.update_dialog()
 
 class Message(Widget):
     """Класс виджета сообщений для окна диалога"""
 
-    message = Reactive("", recompose=True)
-    is_me = Reactive(False, recompose=True)
+    message: Reactive[str] = Reactive("", recompose=True)
+    is_me: Reactive[bool] = Reactive(False, recompose=True)
+    username: Reactive[str] = Reactive("", recompose=True)
+    send_time: Reactive[str] = Reactive("", recompose=True)
     
     def __init__(
             self, 
             name=None, 
-            message=None, 
-            is_me=None, 
             id=None, 
             classes=None, 
             disabled=False
-        ):
+    ) -> None:
         super().__init__(name=name, id=id, classes=classes, disabled=disabled)
-        self.message = message
-        self.is_me = is_me
 
-    def on_mount(self):
-        container = self.query_one(Container)
-        label_border = container.query_one(".border")
-        if self.is_me:
-            self.styles.padding = (0, 0, 0, 15)
-            container.styles.align_horizontal = "right"
-            label_border.styles.border = ("solid", "#4287f5")
-        else:
-            self.styles.padding = (0, 15, 0, 0)
-            container.styles.align_horizontal = "left"
-            label_border.styles.border = ("solid", "#ffffff")
+    def on_mount(self) -> None:
+        pass
 
-    def compose(self):
+    def compose(self) -> ComposeResult:
+        static = Static(self.message)
+        static.border_title = self.username * (not self.is_me)
+        static.border_subtitle = self.send_time
+        
         with Container():
-            with Static(classes="border"):
-                yield Static(str(self.message))
+            yield static
+        
+        if self.is_me:
+            self.classes = "is_me_true"
+        else:
+            self.classes = "is_me_false"
